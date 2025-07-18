@@ -79,12 +79,31 @@ def main(args):
         torch_dtype=precision,
         model_max_length=args.t5_feature_max_len,
     )
-    prompts = [
-        "A portrait photo of a kangaroo wearing an orange hoodie and blue sunglasses standing on the grassin front of the Sydney Opera House holding a sign on the chest that says Welcome Friends!",
-        "A blue Porsche 356 parked in front of a yellow brick wall.",
-        "A photo of an astronaut riding a horse in the forest. There is a river in front of them with water lilies.",
-        "A map of the United States made out of sushi. It is on a table next to a glass of red wine."
-    ]
+    # prompts = [
+    #     "A portrait photo of a kangaroo wearing an orange hoodie and blue sunglasses standing on the grassin front of the Sydney Opera House holding a sign on the chest that says Welcome Friends!",
+    #     "A blue Porsche 356 parked in front of a yellow brick wall.",
+    #     "A photo of an astronaut riding a horse in the forest. There is a river in front of them with water lilies.",
+    #     "A map of the United States made out of sushi. It is on a table next to a glass of red wine."
+    # ]
+
+    filename = "download/parti_prompts.txt"
+    try:
+        with open(filename, "r", encoding="utf-8") as f:
+            prompts = [line.strip() for line in f]
+        
+        print(f"Successfully loaded {len(prompts)} prompts from '{filename}'.")
+
+        # Optional: Print the first 3 prompts to verify they loaded correctly
+        print("\n--- First 3 Prompts ---")
+        for i in range(min(3, len(prompts))):
+            print(prompts[i])
+        print("-----------------------")
+
+    except FileNotFoundError:
+        print(f"Error: The file '{filename}' was not found.")
+        print("Please make sure the text file is in the same directory as your Python script.")
+        prompts = [] # Ensure prompts is an empty list if the file doesn't exist
+
 
     caption_embs, emb_masks = t5_model.get_text_embeddings(prompts)
 
@@ -152,5 +171,10 @@ if __name__ == "__main__":
     parser.add_argument("--top-k", type=int, default=1000, help="top-k value to sample with")
     parser.add_argument("--temperature", type=float, default=1.0, help="temperature value to sample with")
     parser.add_argument("--top-p", type=float, default=1.0, help="top-p value to sample with")
+
+    parser.add_argument("--batch-size", type=int, default=4, help="Number of prompts to process at once.")
     args = parser.parse_args()
     main(args)
+
+###python3 -m autoregressive.sample.sample_t2i --vq-ckpt ./pretrained_models/vq_ds16_t2i.pt --gpt-ckpt ./pretrained_models/t2i_XL_stage1_256.pt --gpt-model GPT-XL --image-size 256
+###python3 -m autoregressive.sample.sample_t2i --vq-ckpt ./pretrained_models/vq_ds16_t2i.pt --gpt-ckpt ./pretrained_models/t2i_XL_stage2_512.pt --gpt-model GPT-XL --image-size 512
