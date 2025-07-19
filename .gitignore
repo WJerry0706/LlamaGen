@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 /pretrained_models
 sample_t2i.png
+/output
+laion-coco-1M-metadata.tsv
