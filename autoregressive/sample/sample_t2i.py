@@ -38,9 +38,14 @@ def main(args):
     torch.set_grad_enabled(False)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # MODIFICATION: Create a timestamped output directory
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    output_path = os.path.join("output", timestamp)
+    # # MODIFICATION: Create a timestamped output directory
+    # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    # output_path = os.path.join("output", timestamp)
+    # os.makedirs(output_path, exist_ok=True)
+    # print(f"Saving generated images to: {output_path}")
+
+    folder_name = f"temperature={args.temperature}"
+    output_path = os.path.join("output", folder_name)
     os.makedirs(output_path, exist_ok=True)
     print(f"Saving generated images to: {output_path}")
 
@@ -113,7 +118,7 @@ def main(args):
     # "A map of the United States made out of sushi. It is on a table next to a glass of red wine."
     # ]
 
-    filename = "download/parti_prompts.txt"
+    filename = "download/cleaned_prompts.txt"
     try:
         with open(filename, "r", encoding="utf-8") as f:
             prompts = [line.strip() for line in f]
@@ -233,7 +238,7 @@ if __name__ == "__main__":
     parser.add_argument("--cfg-scale", type=float, default=7.5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--top-k", type=int, default=1000, help="top-k value to sample with")
-    parser.add_argument("--temperature", type=float, default=0.9, help="temperature value to sample with")
+    parser.add_argument("--temperature", type=float, default=2.0, help="temperature value to sample with")
     parser.add_argument("--top-p", type=float, default=1.0, help="top-p value to sample with")
     
     parser.add_argument("--batch-size", type=int, default=16, help="Number of prompts to process at once.")
