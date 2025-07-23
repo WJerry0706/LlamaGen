@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 # --- Configuration ---
 # Directories where your result files are stored
-fid_results_dir = 'results_fid_conceptual'
-is_results_dir = 'results_is_conceptual'
+fid_results_dir = 'results_fid_coco'
+is_results_dir = 'results_is_coco'
 
 # Output file name for the plot
-output_plot_file = 'conceptual.png'
+output_plot_file = 'coco.png'
 # --- End of Configuration ---
 
 
@@ -41,7 +41,7 @@ def parse_score_file(filepath):
 
 
 # 1. Define the range of temperatures to plot
-temperatures = np.arange(0.1, 2.1, 0.1)
+temperatures = np.arange(0.1, 4.1, 0.1)
 
 # 2. Load the data from the text files
 fid_scores, fid_errors = [], []

@@ -182,3 +182,7 @@ laion-coco-1M-metadata.tsv
 /download/results_is_conceptual
 /others
 /download/output_draft
+/results_fid_conceptual
+/results_is_coco
+/results_fid_coco
+/results_is_conceptual
