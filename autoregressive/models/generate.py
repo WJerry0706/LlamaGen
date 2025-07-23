@@ -54,7 +54,7 @@ def top_k_top_p_filtering(
     return logits
 
 
-def sample(logits, temperature: float=1.0, top_k: int=0, top_p: float=1.0, sample_logits=True):        
+def sample(logits, entropy_total, temperature: float=1.0, top_k: int=0, top_p: float=1.0, sample_logits=True):        
     logits = logits[:, -1, :] / max(temperature, 1e-5)
     if top_k > 0 or top_p < 1.0:
         logits = top_k_top_p_filtering(logits, top_k=top_k, top_p=top_p)
@@ -63,7 +63,15 @@ def sample(logits, temperature: float=1.0, top_k: int=0, top_p: float=1.0, sampl
         idx = torch.multinomial(probs, num_samples=1)
     else:
         _, idx = torch.topk(probs, k=1, dim=-1)
-    return idx, probs
+
+    entropy = -torch.sum(probs * torch.log(probs + 1e-9), dim=-1)
+    # print(entropy.shape)
+    entropy_total += entropy
+    # print("count")
+
+    # print("idx", idx.shape)
+    # print("probs", probs.shape)
+    return idx, probs##idx shape [16,1], probs shape[16,16384]
 
 
 def logits_to_probs(logits, temperature: float = 1.0, top_p: float=1.0, top_k: int = None, **kwargs):
@@ -74,7 +82,7 @@ def logits_to_probs(logits, temperature: float = 1.0, top_p: float=1.0, top_k: i
     return probs
 
 
-def prefill(model, cond_idx: torch.Tensor, input_pos: torch.Tensor, cfg_scale: float, **sampling_kwargs):
+def prefill(model, cond_idx: torch.Tensor, input_pos: torch.Tensor, cfg_scale: float, entropy_total, **sampling_kwargs):
     if cfg_scale > 1.0:
         logits, _ = model(None, cond_idx, input_pos)
         logits_combined = logits
@@ -83,10 +91,11 @@ def prefill(model, cond_idx: torch.Tensor, input_pos: torch.Tensor, cfg_scale: f
     else:
         logits, _ = model(None, cond_idx, input_pos)
 
-    return sample(logits, **sampling_kwargs)[0]
+    # print("111")
+    return sample(logits, entropy_total, **sampling_kwargs)[0]
 
 
-def decode_one_token(model, x: torch.Tensor, input_pos: torch.Tensor, cfg_scale: float, cfg_flag: bool, **sampling_kwargs):
+def decode_one_token(model, x: torch.Tensor, input_pos: torch.Tensor, cfg_scale: float, cfg_flag: bool, entropy_total: torch.Tensor, **sampling_kwargs):
     assert input_pos.shape[-1] == 1
     if cfg_scale > 1.0:
         x_combined = torch.cat([x, x])
@@ -99,12 +108,13 @@ def decode_one_token(model, x: torch.Tensor, input_pos: torch.Tensor, cfg_scale:
             logits = cond_logits
     else:
         logits, _ = model(x, cond_idx=None, input_pos=input_pos)
-    return sample(logits, **sampling_kwargs)
+    # print("222")
+    return sample(logits, entropy_total, **sampling_kwargs)
 
 
 def decode_n_tokens(
     model, cur_token: torch.Tensor, input_pos: torch.Tensor, num_new_tokens: int, 
-    cfg_scale: float, cfg_interval: int,
+    cfg_scale: float, cfg_interval: int, entropy_total: torch.Tensor,
     **sampling_kwargs):
     new_tokens, new_probs = [], []
     cfg_flag = True
@@ -113,7 +123,7 @@ def decode_n_tokens(
             if cfg_interval > -1 and i > cfg_interval:
                 cfg_flag = False
             next_token, next_prob = decode_one_token(
-                model, cur_token, input_pos, cfg_scale, cfg_flag, **sampling_kwargs
+                model, cur_token, input_pos, cfg_scale, cfg_flag, entropy_total, **sampling_kwargs
             )
             input_pos += 1
             new_tokens.append(next_token.clone())
@@ -125,6 +135,7 @@ def decode_n_tokens(
 
 @torch.no_grad()
 def generate(model, cond, max_new_tokens, emb_masks=None, cfg_scale=1.0, cfg_interval=-1, **sampling_kwargs):
+    entropy_total = torch.zeros(cond.shape[0], device=cond.device)
     if model.model_type == 'c2i':
         if cfg_scale > 1.0:
             cond_null = torch.ones_like(cond) * model.num_classes
@@ -166,11 +177,11 @@ def generate(model, cond, max_new_tokens, emb_masks=None, cfg_scale=1.0, cfg_int
     seq = torch.empty((max_batch_size, T_new), dtype=torch.int, device=device)
 
     input_pos = torch.arange(0, T, device=device)
-    next_token = prefill(model, cond_combined, input_pos, cfg_scale, **sampling_kwargs)
+    next_token = prefill(model, cond_combined, input_pos, cfg_scale, entropy_total, **sampling_kwargs)
     seq[:, T:T+1] = next_token
 
     input_pos = torch.tensor([T], device=device, dtype=torch.int)
-    generated_tokens, _ = decode_n_tokens(model, next_token, input_pos, max_new_tokens-1, cfg_scale, cfg_interval, **sampling_kwargs)
+    generated_tokens, _ = decode_n_tokens(model, next_token, input_pos, max_new_tokens-1, cfg_scale, cfg_interval, entropy_total, **sampling_kwargs)
     seq[:, T+1:] = torch.cat(generated_tokens, dim=1)
 
-    return seq[:, T:]
+    return seq[:, T:], entropy_total

@@ -246,8 +246,8 @@ def evaluate_model(opt):
 if __name__ == "__main__":
     import argparse 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--fake_dir", required=True, default="/home/GigaGAN_images/", help="location of fake images for evaluation")
-    parser.add_argument("--ref_dir",  required=True, default="/home/COCO/", help="location of the reference images for evaluation")
+    parser.add_argument("--fake_dir", required=None, default="output/512_coco_captions.txt_1.0/samples/", help="location of fake images for evaluation")
+    parser.add_argument("--ref_dir",  required=None, default="conceptual_images/", help="location of the reference images for evaluation")
     parser.add_argument("--ref_data", default="coco2014", type=str, help="in [imagenet2012, coco2014, laion4k]")
     parser.add_argument("--ref_type", default="train/valid/test", help="Type of reference dataset")
 

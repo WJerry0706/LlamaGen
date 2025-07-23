@@ -1,5 +1,6 @@
 # Modified from:
 #   DiT:  https://github.com/facebookresearch/DiT/blob/main/sample.py
+import re
 import torch
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -74,7 +75,7 @@ def main(args):
         print(f"no need to compile model in demo") 
 
     # Labels to condition the model with (feel free to change):
-    class_labels = [207, 360, 387, 974, 88, 979, 417, 279]
+    class_labels = args.class_labels
     c_indices = torch.tensor(class_labels, device=device)
     qzshape = [len(class_labels), args.codebook_embed_dim, latent_size, latent_size]
 
@@ -100,15 +101,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpt-model", type=str, choices=list(GPT_models.keys()), default="GPT-B")
-    parser.add_argument("--gpt-ckpt", type=str, default=None)
+    parser.add_argument("--gpt-model", type=str, choices=list(GPT_models.keys()), default="GPT-XXL")
+    parser.add_argument("--gpt-ckpt", type=str, default="./pretrained_models/c2i_XXL_384.pt")
     parser.add_argument("--gpt-type", type=str, choices=['c2i', 't2i'], default="c2i", help="class-conditional or text-conditional")
     parser.add_argument("--from-fsdp", action='store_true')
     parser.add_argument("--cls-token-num", type=int, default=1, help="max token number of condition input")
     parser.add_argument("--precision", type=str, default='bf16', choices=["none", "fp16", "bf16"]) 
     parser.add_argument("--compile", action='store_true', default=False)
     parser.add_argument("--vq-model", type=str, choices=list(VQ_models.keys()), default="VQ-16")
-    parser.add_argument("--vq-ckpt", type=str, default=None, help="ckpt path for vq model")
+    parser.add_argument("--vq-ckpt", type=str, default="./pretrained_models/vq_ds16_c2i.pt", help="ckpt path for vq model")
     parser.add_argument("--codebook-size", type=int, default=16384, help="codebook size for vector quantization")
     parser.add_argument("--codebook-embed-dim", type=int, default=8, help="codebook dimension for vector quantization")
     parser.add_argument("--image-size", type=int, choices=[256, 384, 512], default=384)
@@ -120,5 +121,6 @@ if __name__ == "__main__":
     parser.add_argument("--top-k", type=int, default=2000,help="top-k value to sample with")
     parser.add_argument("--temperature", type=float, default=1.0, help="temperature value to sample with")
     parser.add_argument("--top-p", type=float, default=1.0, help="top-p value to sample with")
+    # parser.add_argument("--class_labels", type=int, nargs='+', required=True, help="Space-separated list of ImageNet class labels to generate.")
     args = parser.parse_args()
     main(args)

@@ -1,28 +1,16 @@
-import os
-from transformers import T5ForConditionalGeneration, T5Tokenizer
+from transformers import T5Tokenizer, T5ForConditionalGeneration
 
-# Define the model name from the Hugging Face Hub
-model_name = "google/flan-t5-xl"
-# Define the name for your output folder
-output_dir = "t5-ckpt"
+model_name = "google/flan-t5-xxl"
 
-# Create the output directory if it doesn't exist
-os.makedirs(output_dir, exist_ok=True)
-
-print(f"Loading model and tokenizer for '{model_name}'...")
-print("This may take a while...")
-
-# Load the pretrained model and tokenizer
-model = T5ForConditionalGeneration.from_pretrained(model_name)
+print("Loading tokenizer...")
 tokenizer = T5Tokenizer.from_pretrained(model_name)
-print("Model and tokenizer loaded successfully.")
 
+print("Loading model... This will download ~44 GB and may take a very long time.")
+# device_map="auto" and load_in_8bit=True are essential for managing this huge model
+model = T5ForConditionalGeneration.from_pretrained(
+    model_name,
+    device_map="auto",
+    load_in_8bit=True
+)
 
-print(f"\nSaving model and tokenizer to '{output_dir}'...")
-# Save the model's weights and configuration file
-model.save_pretrained(output_dir)
-
-# Save the tokenizer's files
-tokenizer.save_pretrained(output_dir)
-
-print(f"All files have been saved to the '{output_dir}' folder.")
+print("\nFLAN-T5-XXL has been downloaded and loaded successfully!")

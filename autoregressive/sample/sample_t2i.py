@@ -1,3 +1,4 @@
+from numpy import average
 import torch
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -44,8 +45,9 @@ def main(args):
     # os.makedirs(output_path, exist_ok=True)
     # print(f"Saving generated images to: {output_path}")
 
-    folder_name = f"temperature={args.temperature}"
-    output_path = os.path.join("output", folder_name)
+    
+    folder_name = f"{args.image_size}_{args.prompts}_{args.temperature}"
+    output_path = os.path.join("output_entro", folder_name)
     os.makedirs(output_path, exist_ok=True)
     print(f"Saving generated images to: {output_path}")
 
@@ -118,7 +120,8 @@ def main(args):
     # "A map of the United States made out of sushi. It is on a table next to a glass of red wine."
     # ]
 
-    filename = "download/cleaned_prompts.txt"
+    # filename = "download/cleaned_prompts.txt"
+    filename = args.prompts
     try:
         with open(filename, "r", encoding="utf-8") as f:
             prompts = [line.strip() for line in f]
@@ -139,6 +142,8 @@ def main(args):
     
     num_batches = (len(prompts) + args.batch_size - 1) // args.batch_size
     
+    all_entropies = []
+
     for i in tqdm(range(0, len(prompts), args.batch_size), desc="Processing Batches"):
         prompt_batch = prompts[i:i + args.batch_size]
         print(f"\n--- Processing Batch {i // args.batch_size + 1}/{num_batches} (size: {len(prompt_batch)}) ---")
@@ -161,13 +166,16 @@ def main(args):
 
         qzshape = [len(c_indices), args.codebook_embed_dim, latent_size, latent_size]
         t1 = time.time()
-        index_sample = generate(
+        # print(c_emb_masks.shape)
+        index_sample, entropy = generate(
             gpt_model, c_indices, latent_size ** 2, 
             c_emb_masks, 
             cfg_scale=args.cfg_scale,
             temperature=args.temperature, top_k=args.top_k,
             top_p=args.top_p, sample_logits=True, 
         )
+        all_entropies.extend(entropy.tolist())
+
         sampling_time = time.time() - t1
         total_sampling_time += sampling_time
         print(f"Batch sampling took about {sampling_time:.2f} seconds.")    
@@ -197,10 +205,34 @@ def main(args):
 
         all_samples.append(samples)
 
+    print(len(all_entropies))
+    average_entropy = sum(all_entropies) / len(all_entropies)
+    print(average_entropy)
     final_samples = torch.cat(all_samples, dim=0)
     
     print("\n--- All Batches Processed ---")
     print(f"Total sampling time: {total_sampling_time:.2f} seconds.")
+
+        # --- ADD THIS BLOCK TO SAVE ENTROPY RESULTS ---
+    print("\n--- Saving Entropy Results ---")
+    entropy_file_path = os.path.join(output_path, "entropy_results.txt")
+
+    try:
+        with open(entropy_file_path, "w", encoding="utf-8") as f:
+            # Write the summary at the top of the file
+            f.write(f"Average Entropy: {average_entropy:.4f}\n")
+            f.write(f"Total Prompts Processed: {len(all_entropies)}\n")
+            f.write("\n--- Individual Entropies ---\n")
+            
+            # Write each individual entropy value on a new line
+            for index, entropy_value in enumerate(all_entropies):
+                f.write(f"Prompt_{index:04d}: {entropy_value:.4f}\n")
+                
+        print(f"✅ Entropy results saved to: {entropy_file_path}")
+
+    except IOError as e:
+        print(f"❌ Error saving entropy file: {e}")
+    # --- END OF NEW BLOCK ---
 
     # MODIFICATION: Save a grid of the first 4 images
     if len(final_samples) > 0:
@@ -238,8 +270,9 @@ if __name__ == "__main__":
     parser.add_argument("--cfg-scale", type=float, default=7.5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--top-k", type=int, default=1000, help="top-k value to sample with")
-    parser.add_argument("--temperature", type=float, default=2.0, help="temperature value to sample with")
+    parser.add_argument("--temperature", type=float, default=1.0, help="temperature value to sample with")
     parser.add_argument("--top-p", type=float, default=1.0, help="top-p value to sample with")
+    parser.add_argument("--prompts", type=str, default='download/test.txt', help="prompts txt files")
     
     parser.add_argument("--batch-size", type=int, default=16, help="Number of prompts to process at once.")
     
