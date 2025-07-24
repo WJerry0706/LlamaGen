@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 # --- Configuration ---
 # Directories where your result files are stored
-fid_results_dir = 'results_fid_coco'
-is_results_dir = 'results_is_coco'
+fid_results_dir = 'seed/results_fid_conceptual'
+is_results_dir = 'seed/results_is_conceptual'
 
 # Output file name for the plot
-output_plot_file = 'coco.png'
+output_plot_file = 'seed/conceptual.png'
 # --- End of Configuration ---
 
 

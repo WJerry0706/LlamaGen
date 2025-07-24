@@ -5,13 +5,13 @@
 PYTHON_SCRIPT="evaluation/FID.py"
 
 # The base directory for all model outputs
-BASE_INPUT_DIR="output_entro"
+BASE_INPUT_DIR="output_seed"
 
 # The constant reference directory
-REFERENCE_DIR="coco_images"
+REFERENCE_DIR="conceptual_images"
 
 # The directory where all result files will be saved
-RESULTS_DIR="results_fid_coco"
+RESULTS_DIR="seed/results_fid_conceptual"
 # --- End of Configuration ---
 
 # Exit immediately if a command exits with a non-zero status.
@@ -24,10 +24,10 @@ echo "🚀 Starting FID score calculation for all scales..."
 echo "==================================================="
 
 # Loop through scales from 0.1 to 2.0 with a step of 0.1
-for scale in $(seq 0.1 0.1 4.0)
+for scale in $(seq 0.1 0.1 1.0)
 do
     # Construct the full path for the current input folder
-    INPUT_FOLDER="${BASE_INPUT_DIR}/256_coco_captions.txt_${scale}/samples"
+    INPUT_FOLDER="${BASE_INPUT_DIR}/256_conceptual.txt_${scale}/samples"
     
     # Construct the name for the output file
     OUTPUT_FILE="${RESULTS_DIR}/fid_score_${scale}.txt"

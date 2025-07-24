@@ -3,7 +3,7 @@
 # --- Configuration ---
 PYTHON_SCRIPT="evaluation/IS.py"
 BASE_INPUT_DIR="output_entro"
-RESULTS_DIR="results_is_coco"
+RESULTS_DIR="seed/results_is_conceptual"
 # The NUM_IMAGES variable is no longer needed.
 # --- End of Configuration ---
 
@@ -13,9 +13,9 @@ mkdir -p "$RESULTS_DIR"
 echo "🚀 Starting Inception Score calculation for all scales..."
 echo "========================================================"
 
-for scale in $(seq 0.1 0.1 4.0)
+for scale in $(seq 0.1 0.1 1.0)
 do
-    INPUT_FOLDER="${BASE_INPUT_DIR}/256_coco_captions.txt_${scale}/samples"
+    INPUT_FOLDER="${BASE_INPUT_DIR}/256_conceptual.txt_${scale}/samples"
     OUTPUT_FILE="${RESULTS_DIR}/is_score_${scale}.txt"
 
     echo ""

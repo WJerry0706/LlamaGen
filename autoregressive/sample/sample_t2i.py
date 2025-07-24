@@ -47,7 +47,7 @@ def main(args):
 
     
     folder_name = f"{args.image_size}_{args.prompts}_{args.temperature}"
-    output_path = os.path.join("output_entro", folder_name)
+    output_path = os.path.join("output_seed", folder_name)
     os.makedirs(output_path, exist_ok=True)
     print(f"Saving generated images to: {output_path}")
 

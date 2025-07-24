@@ -186,3 +186,6 @@ laion-coco-1M-metadata.tsv
 /results_is_coco
 /results_fid_coco
 /results_is_conceptual
+/output_seed
+/entropy
+/seed

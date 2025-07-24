@@ -96,7 +96,7 @@ def prefill(model, cond_idx: torch.Tensor, input_pos: torch.Tensor, cfg_scale: f
 
 
 def decode_one_token(model, x: torch.Tensor, input_pos: torch.Tensor, cfg_scale: float, cfg_flag: bool, entropy_total: torch.Tensor, **sampling_kwargs):
-    assert input_pos.shape[-1] == 1
+    assert input_pos.shape[-1] == 1## 
     if cfg_scale > 1.0:
         x_combined = torch.cat([x, x])
         logits, _ = model(x_combined, cond_idx=None, input_pos=input_pos)
