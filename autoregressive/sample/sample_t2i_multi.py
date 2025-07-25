@@ -223,7 +223,7 @@ if __name__ == "__main__":
     parser.add_argument("--top-k", type=int, default=1000, help="top-k value to sample with")
     parser.add_argument("--temperature", type=float, default=1.0, help="temperature value to sample with")
     parser.add_argument("--top-p", type=float, default=1.0, help="top-p value to sample with")
-    parser.add_argument("--prompts", type=str, default='benchmark.txt', help="prompts txt files")
+    parser.add_argument("--prompts", type=str, default='bennchmark.txt', help="prompts txt files")
     parser.add_argument("--batch-size", type=int, default=16, help="Number of prompts to process at once.")
     
     args = parser.parse_args()
