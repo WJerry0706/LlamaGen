@@ -259,8 +259,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--code-path", type=str, required=True)
-    parser.add_argument("--cloud-save-path", type=str, required=True, help='please specify a cloud disk path, if not, local path')
+    parser.add_argument("--code-path", type=str, default='train', required=False)
+    parser.add_argument("--cloud-save-path", type=str, default='checkpoint', required=False, help='please specify a cloud disk path, if not, local path')
     parser.add_argument("--no-local-save", action='store_true', help='no save checkpoints to local path for limited disk volume')
     parser.add_argument("--gpt-model", type=str, choices=list(GPT_models.keys()), default="GPT-B")
     parser.add_argument("--gpt-ckpt", type=str, default=None, help="ckpt path for resume training")

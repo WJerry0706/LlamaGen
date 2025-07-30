@@ -1,0 +1,8 @@
+[[34m2025-07-28 14:28:15[0m] Experiment directory created at results/000-GPT-B
+[[34m2025-07-28 14:28:15[0m] Experiment directory created in cloud at checkpoint/2025-07-28-14-28-15/000-GPT-B/checkpoints
+[[34m2025-07-28 14:28:15[0m] Namespace(beta1=0.9, beta2=0.95, ckpt_every=5000, cloud_save_path='checkpoint', cls_token_num=1, code_path='train', dataset='imagenet_code', dist_backend='nccl', dist_url='env://', distributed=True, downsample_size=16, drop_path_rate=0.0, dropout_p=0.1, ema=False, epochs=300, global_batch_size=256, global_seed=0, gpt_ckpt=None, gpt_model='GPT-B', gpt_type='c2i', gpu=0, gradient_accumulation_steps=1, image_size=256, log_every=100, lr=0.0001, max_grad_norm=1.0, mixed_precision='bf16', no_compile=False, no_local_save=False, num_classes=1000, num_workers=24, rank=0, results_dir='results', token_dropout_p=0.1, vocab_size=16384, weight_decay=0.05, world_size=1)
+[[34m2025-07-28 14:28:15[0m] Starting rank=0, seed=0, world_size=1.
+[[34m2025-07-28 14:28:16[0m] GPT Parameters: 110,888,448
+[[34m2025-07-28 14:28:16[0m] num decayed parameter tensors: 63, with 110,869,248 parameters
+[[34m2025-07-28 14:28:16[0m] num non-decayed parameter tensors: 25, with 19,200 parameters
+[[34m2025-07-28 14:28:16[0m] using fused AdamW: True
