@@ -1,29 +1,22 @@
 import numpy as np
 import os
 from collections import defaultdict
-import json # Import for JSON output
+import json
+import matplotlib.pyplot as plt
 
 def analyze_npy_codes(directory_path, start_index, end_index, codebook_size=16384):
     """
     Reads .npy files in a specified range, extracts the first layer of codes,
     and counts the occurrences of each index within a given codebook size.
-
-    Args:
-        directory_path (str): The path to the directory containing the .npy files.
-                              e.g., 'extracted/imagenet256_codes'
-        start_index (int): The starting index of the .npy files (e.g., 0 for '0.npy').
-        end_index (int): The ending index of the .npy files (e.g., 34744 for '34744.npy').
-        codebook_size (int): The maximum possible index value + 1 (size of the VQ codebook).
-                             Defaults to 16384.
-
-    Returns:
-        collections.defaultdict: A dictionary where keys are codebook indices (0 to codebook_size-1)
-                                 and values are their total counts across all processed files.
     """
     index_counts = defaultdict(int)
 
     print(f"Starting analysis of .npy files from {start_index}.npy to {end_index}.npy in {directory_path}")
     print(f"Expected codebook size: {codebook_size}")
+
+    if not os.path.isdir(directory_path):
+        print(f"Error: Directory '{directory_path}' not found. Please ensure the path is correct.")
+        return index_counts
 
     for i in range(start_index, end_index + 1):
         file_name = f"{i}.npy"
@@ -46,7 +39,7 @@ def analyze_npy_codes(directory_path, start_index, end_index, codebook_size=1638
                     print(f"Warning: Found index {code_index} in {file_name} which is outside expected codebook range [0, {codebook_size-1}].")
 
         except FileNotFoundError:
-            print(f"Error: File '{file_path}' not found. Skipping.")
+            pass
         except Exception as e:
             print(f"An error occurred while processing '{file_path}': {e}. Skipping.")
 
@@ -59,45 +52,141 @@ def analyze_npy_codes(directory_path, start_index, end_index, codebook_size=1638
 def save_counts_to_file(counts_dict, output_file_path, format='txt'):
     """
     Saves the dictionary of codebook index counts to a file.
-
-    Args:
-        counts_dict (dict): The dictionary containing codebook index counts.
-        output_file_path (str): The path where the output file should be saved.
-        format (str): 'txt' for human-readable text file, 'json' for JSON file.
-                      Defaults to 'txt'.
     """
-    os.makedirs(os.path.dirname(output_file_path) or '.', exist_ok=True) # Ensure output directory exists
+    os.makedirs(os.path.dirname(output_file_path) or '.', exist_ok=True)
 
     if format == 'txt':
         with open(output_file_path, 'w') as f:
             f.write("Codebook Index Counts:\n")
             f.write("----------------------\n")
-            # Sort for consistent output, by index ascending
             sorted_items = sorted(counts_dict.items(), key=lambda item: item[0])
             for index, count in sorted_items:
                 f.write(f"Index {index}: {count}\n")
         print(f"Counts saved to plain text file: {output_file_path}")
     elif format == 'json':
         with open(output_file_path, 'w') as f:
-            # Convert defaultdict to a regular dict for JSON serialization
             json.dump(dict(counts_dict), f, indent=4)
         print(f"Counts saved to JSON file: {output_file_path}")
     else:
         print(f"Unsupported output format: {format}. Please choose 'txt' or 'json'.")
 
+def plot_and_save_counts_by_index(counts_dict, output_image_path):
+    """
+    Plots the distribution of codebook indices in numerical order (not by frequency)
+    using a LINEAR scale for the y-axis.
+    """
+    if not counts_dict:
+        print("No data to plot. Skipping image generation.")
+        return
 
-# --- Example Usage ---
+    indices = sorted(counts_dict.keys())
+    counts = [counts_dict[index] for index in indices]
+    
+    os.makedirs(os.path.dirname(output_image_path) or '.', exist_ok=True)
 
-# Define the directory and file range
-codes_directory = 'extracted/imagenet256_codes'
+    plt.figure(figsize=(20, 8))
+    plt.bar(indices, counts, color='skyblue')
+    
+    # plt.yscale('log') # This line has been removed as requested.
+    
+    plt.xlabel('Codebook Index')
+    plt.ylabel('Count') # Label updated to reflect linear scale
+    plt.title('Distribution of All Codebook Index Frequencies (Sorted by Index)')
+    plt.xticks([]) 
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+    try:
+        plt.savefig(output_image_path)
+        print(f"Plot saved to: {output_image_path}")
+    except Exception as e:
+        print(f"Error saving plot to '{output_image_path}': {e}")
+
+    plt.close()
+
+def plot_and_save_counts_by_frequency(counts_dict, output_image_path):
+    """
+    Plots the distribution of codebook indices sorted by frequency in descending order
+    using a LINEAR scale for the y-axis.
+    """
+    if not counts_dict:
+        print("No data to plot. Skipping image generation.")
+        return
+
+    sorted_items = sorted(counts_dict.items(), key=lambda item: item[1], reverse=True)
+    counts = [item[1] for item in sorted_items]
+
+    os.makedirs(os.path.dirname(output_image_path) or '.', exist_ok=True)
+
+    plt.figure(figsize=(20, 8))
+    plt.bar(range(len(counts)), counts, color='lightgreen')
+    
+    # plt.yscale('log') # This line has been removed as requested.
+    
+    plt.xlabel('Codebook Index (Ranked by Frequency)')
+    plt.ylabel('Count') # Label updated to reflect linear scale
+    plt.title('Distribution of All Codebook Index Frequencies (Sorted by Count)')
+    plt.xticks([])
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+
+    try:
+        plt.savefig(output_image_path)
+        print(f"Plot saved to: {output_image_path}")
+    except Exception as e:
+        print(f"Error saving plot to '{output_image_path}': {e}")
+
+    plt.close()
+
+def plot_low_frequency_histogram(counts_dict, output_image_path, num_bins=50):
+    """
+    Selects the 98% of indices with the lowest frequencies and plots a
+    histogram of their occurrence counts.
+    """
+    if not counts_dict:
+        print("No data to plot. Skipping low-frequency histogram generation.")
+        return
+        
+    sorted_items = sorted(counts_dict.items(), key=lambda item: item[1])
+    num_unique_indices = len(sorted_items)
+    cutoff_index = int(num_unique_indices * 0.98)
+    low_freq_counts = [item[1] for item in sorted_items[:cutoff_index]]
+
+    if not low_freq_counts:
+        print("Not enough data to generate a low-frequency histogram.")
+        return
+
+    os.makedirs(os.path.dirname(output_image_path) or '.', exist_ok=True)
+    
+    plt.figure(figsize=(20, 8))
+    plt.hist(low_freq_counts, bins=num_bins, color='coral', edgecolor='black')
+    
+    plt.xlabel('Number of Occurrences (for a single token)')
+    plt.ylabel('Number of Tokens in Bin')
+    plt.title('Histogram of Counts for the 98% Least Frequent Tokens')
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    plt.tight_layout()
+    
+    try:
+        plt.savefig(output_image_path)
+        print(f"Low-frequency histogram saved to: {output_image_path}")
+    except Exception as e:
+        print(f"Error saving histogram to '{output_image_path}': {e}")
+        
+    plt.close()
+
+
+# --- Main execution block ---
+codes_directory = 'extracted_imagenet/imagenet256_codes'
 start_file_index = 0
-end_file_index = 34744 # Or adjust to a smaller number for testing, e.g., 99
+end_file_index = 8000
 vq_codebook_size = 16384
 
-# Define output file paths
-output_dir = 'analysis_results'
+output_dir = 'analysis_results/imagenet'
 txt_output_file = os.path.join(output_dir, 'codebook_counts.txt')
-json_output_file = os.path.join(output_dir, 'codebook_counts.json')
+image_output_file_by_index = os.path.join(output_dir, 'codebook_distribution_by_index_linear.png') # Renamed file
+image_output_file_by_frequency = os.path.join(output_dir, 'codebook_distribution_by_frequency_linear.png') # Renamed file
+low_freq_histogram_output_file = os.path.join(output_dir, 'low_frequency_histogram.png')
 
 # Run the analysis to get counts
 total_counts = analyze_npy_codes(
@@ -107,20 +196,36 @@ total_counts = analyze_npy_codes(
     codebook_size=vq_codebook_size
 )
 
-# Save the counts to files
+# Process and save results only if data was processed
 if total_counts:
-    # Save as plain text
     save_counts_to_file(total_counts, txt_output_file, format='txt')
-
-    # Save as JSON
-    save_counts_to_file(total_counts, json_output_file, format='json')
+    
+    plot_and_save_counts_by_index(total_counts, image_output_file_by_index)
+    plot_and_save_counts_by_frequency(total_counts, image_output_file_by_frequency)
+    plot_low_frequency_histogram(total_counts, low_freq_histogram_output_file)
 
     print("\n--- Summary ---")
     print(f"Total unique indices found: {len(total_counts)}")
-    # Optionally, print top 10 most frequent to console as well
-    print("\n--- Top 10 Most Frequent Codebook Indices (Console) ---")
-    sorted_counts_console = sorted(total_counts.items(), key=lambda item: item[1], reverse=True)
-    for index, count in sorted_counts_console[:10]:
+    
+    total_sum_counts = sum(total_counts.values())
+    average_count = total_sum_counts / len(total_counts) if len(total_counts) > 0 else 0
+
+    sorted_counts = sorted(total_counts.items(), key=lambda item: item[1], reverse=True)
+    top_10_indices = sorted_counts[:10]
+    last_10_indices = sorted_counts[-10:]
+
+    print("\n--- Distribution Information ---")
+    print(f"Average count per index: {average_count:.2f}")
+
+    print("\n--- Top 10 Most Frequent Codebook Indices ---")
+    for index, count in top_10_indices:
         print(f"Index {index}: {count} occurrences")
+
+    print("\n--- Last 10 Least Frequent Codebook Indices ---")
+    if last_10_indices:
+        for index, count in last_10_indices:
+            print(f"Index {index}: {count} occurrences")
+    else:
+        print("Not enough unique indices to display the last 10.")
 else:
-    print("No data processed or no counts generated. No output files saved.")
+    print("\nNo data processed. Cannot provide distribution information.")

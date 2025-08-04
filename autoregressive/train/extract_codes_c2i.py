@@ -120,8 +120,8 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str, default='train', required=False)
-    parser.add_argument("--code-path", type=str, default='extracted', required=False)
+    parser.add_argument("--data-path", type=str, default='others/output_class', required=False)
+    parser.add_argument("--code-path", type=str, default='extracted_inf', required=False)
     parser.add_argument("--vq-model", type=str, choices=list(VQ_models.keys()), default="VQ-16")
     parser.add_argument("--vq-ckpt", type=str,default='pretrained_models/vq_ds16_c2i.pt', required=False, help="ckpt path for vq model")
     parser.add_argument("--codebook-size", type=int, default=16384, help="codebook size for vector quantization")

@@ -194,3 +194,11 @@ laion-coco-1M-metadata.tsv
 /extracted
 /train
 /train
+/output_class
+/extracted_imagenet
+/extracted_inf
+/extracted_meissonic
+/ImageNet-Parquet
+/imagenet
+/imagenet_subset
+/output_images
