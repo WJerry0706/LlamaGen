@@ -98,8 +98,8 @@ def plot_frequency_comparison(freq_dict1, freq_dict2, output_image_path, regress
     plt.close()
 
 file1_path = "analysis_results/imagenet/codebook_counts.txt"
-file2_path = "analysis_results/inf/codebook_counts.txt"
-output_plot_file = "analysis_results/frequency_regression_plot.png"
+file2_path = "analysis_results/meissonic/codebook_counts.txt"
+output_plot_file = "analysis_results/cross_dataset.png"
 
 # 1. Parse the two files into dictionaries
 freq1 = parse_frequency_file(file1_path)
