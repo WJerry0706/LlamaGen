@@ -61,7 +61,7 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", type=str, required=True, 
                         help="Path to the file to save the final FID score.")
                         
-    parser.add_argument("--resolution", type=int, default=256,
+    parser.add_argument("--resolution", type=int, default=1024,
                         help="Resolution to resize images to before FID calculation (e.g., 256).")
                         
     parser.add_argument("--feature_extractor", type=str, default="inception", choices=["inception", "clip"],

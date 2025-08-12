@@ -1,0 +1,1 @@
+Inception Score: 123.9984 ± 4.6850

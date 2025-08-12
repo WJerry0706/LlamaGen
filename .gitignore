@@ -202,3 +202,5 @@ laion-coco-1M-metadata.tsv
 /imagenet
 /imagenet_subset
 /output_images
+/imagenet_ori
+/output_adjust
