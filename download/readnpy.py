@@ -177,12 +177,12 @@ def plot_low_frequency_histogram(counts_dict, output_image_path, num_bins=50):
 
 
 # --- Main execution block ---
-codes_directory = 'extracted_imagenet/imagenet256_codes'
+codes_directory = 'laion_huge/laion_images_256_codes'
 start_file_index = 0
-end_file_index = 8000
+end_file_index = 14000
 vq_codebook_size = 16384
 
-output_dir = 'analysis_results/imagenet'
+output_dir = 'analysis_results/laion_huge'
 txt_output_file = os.path.join(output_dir, 'codebook_counts.txt')
 image_output_file_by_index = os.path.join(output_dir, 'codebook_distribution_by_index_linear.png') # Renamed file
 image_output_file_by_frequency = os.path.join(output_dir, 'codebook_distribution_by_frequency_linear.png') # Renamed file

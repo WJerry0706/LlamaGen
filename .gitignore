@@ -202,3 +202,13 @@ laion-coco-1M-metadata.tsv
 /imagenet
 /imagenet_subset
 /output_images
+/laion_huge
+llamagen_0.3
+llamagen_0.7
+llamagen_1
+llamagen_1.5
+llamagen_2
+llamagen_3
+llamagen_4
+llamagen_6
+llamagen_8
